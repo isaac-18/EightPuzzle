@@ -39,10 +39,10 @@ class Node:
         return
 
     # Returns coordinates the of blank square
-    def blankCoord(self):
+    def findCoords(self, searchValue):
         for x, col in enumerate(self.data):
             try:
-                return x, col.index(0)
+                return x, col.index(searchValue)
             except ValueError:
                 pass
         return
@@ -95,12 +95,24 @@ def MTH(node, goal):
     return node.g + h
 
 def MDH(node, goal):
-    # Distance of blank square to goal position for h
-    return
+    puzzle = node.data
+    h = 0
+
+    for y in range(COLS):
+        for x in range(ROWS):
+            # If there is a misplaced tile it finds the coordinates of it and then 
+            # calculates the distance to where it should be.
+            if puzzle[y][x] != goal[y][x]:
+                tileCoords = node.findCoords(goal[y][x])    # Location of misplaced tile
+                horizontalMoves = abs(x - tileCoords[1])
+                verticalMoves = abs(y - tileCoords[0])
+                h += (horizontalMoves + verticalMoves)
+                    
+    return node.g + h
 
 def expand(node, queue):
         puzzle = node.data
-        coords = node.blankCoord()
+        coords = node.findCoords(0) # Coordinates of the empty square
         g = node.g + 1
         global nodesExpanded
 
@@ -251,6 +263,7 @@ def main():
     puzzle = [[1, 2, 3], 
               [4, 5, 6], 
               [0, 7, 8]]
+
     puzzle1 = [[1, 2, 3], 
               [5, 0, 6], 
               [4, 7, 8]] # AB 23 iterations 4 depth
@@ -296,7 +309,7 @@ def main():
                  [4, 5, 6], 
                  [7, 8, 0]]
 
-    generalSearch(F, puzzleEnd, 1)
+    generalSearch(G, puzzleEnd, 3)
     
     
 main()
