@@ -1,5 +1,6 @@
 import queue
 import heapq
+from random import randint
 from copy import deepcopy
 
 # Board Size
@@ -53,32 +54,6 @@ class Node:
             print('-------------')
 
 
-def welcome():
-    print('Welcome to Isaac\'s 8-puzzle solver.')
-    
-    puzzleChoice = int(input('Type “1” to use a default puzzle, or “2” to enter your own puzzle. '))
-    puzzle = [[0 for i in range(COLS)] for j in range(ROWS)]
-    
-    if puzzleChoice == 1:
-        # Default puzzle
-        puzzle = [[1, 2, 3], 
-                  [4, 8, 0], 
-                  [7, 6, 5]]
-    elif puzzleChoice == 2:
-        print('Enter your puzzle. Use a zero to represent the blank and use space or tabs between numbers.')
-        for i in range(ROWS):
-            try:
-                # Take multiple inputs using list comprehension. Uses maxsplit argument of split() to ensure valid input
-                puzzle[i] = [int(item) for item in input('Row {}: '.format(i+1)).split(None, COLS - 1)] 
-            except:
-                print('You can only input {} numbers per row. Try again.'.format(COLS))
-                return -1
-
-    print('Enter your choice of algorithm: ')
-    print(' 1. Uniform Cost Search\n 2. A* with the Misplaced Tile heuristic.\n 3. A* with the Manhattan distance heuristic.')
-    algoChoice = int(input())
-
-
 def UCS(node):
     h = 0
     return node.g + h
@@ -123,11 +98,8 @@ def expand(node, queue):
             if coords[1] != 0:
                 newPuzzle[coords[0]][coords[1]], newPuzzle[coords[0]][coords[1]-1] = newPuzzle[coords[0]][coords[1]-1], newPuzzle[coords[0]][coords[1]]
                 newNode = Node(newPuzzle, g)
-                # if (newPuzzle != puzzle) and (newPuzzle not in visitedStates):
                 if newPuzzle not in visitedStates:
                     node.add_child(newNode)
-                else:
-                    print('node is already in queue')
         except:
             # print('Can\'t move left!')
             # print('-------------')
@@ -139,11 +111,8 @@ def expand(node, queue):
             newPuzzle = deepcopy(puzzle)
             newPuzzle[coords[0]][coords[1]], newPuzzle[coords[0]][coords[1]+1] = newPuzzle[coords[0]][coords[1]+1], newPuzzle[coords[0]][coords[1]]
             newNode = Node(newPuzzle, g)
-            # if (newPuzzle != puzzle) and (newPuzzle not in visitedStates):
             if newPuzzle not in visitedStates:
                 node.add_child(newNode)
-            else:
-                print('node is already in queue')
         except:
             # print('Can\'t move right!')
             # print('-------------')
@@ -156,11 +125,8 @@ def expand(node, queue):
             if coords[0] != 0:
                 newPuzzle[coords[0]][coords[1]], newPuzzle[coords[0]-1][coords[1]] = newPuzzle[coords[0]-1][coords[1]], newPuzzle[coords[0]][coords[1]]
                 newNode = Node(newPuzzle, g)
-                # if (newPuzzle != puzzle) and (newPuzzle not in visitedStates):
                 if newPuzzle not in visitedStates:
                     node.add_child(newNode)
-                else:
-                    print('node is already in queue')
         except:
             # print('Can\'t move up!')
             # print('-------------')
@@ -172,11 +138,8 @@ def expand(node, queue):
             newPuzzle = deepcopy(puzzle)
             newPuzzle[coords[0]][coords[1]], newPuzzle[coords[0]+1][coords[1]] = newPuzzle[coords[0]+1][coords[1]], newPuzzle[coords[0]][coords[1]]
             newNode = Node(newPuzzle, g)
-            # if (newPuzzle != puzzle) and (newPuzzle not in visitedStates):
             if newPuzzle not in visitedStates:
                 node.add_child(newNode)
-            else:
-                print('node is already in queue')
         except:
             # print('Can\'t move down!')
             # print('-------------')
@@ -188,8 +151,8 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
     nodes = []
     heapq.heappush(nodes, (0, 0, rootNode))
 
-    # global visitedStates
-    # visitedStates = []
+    print('\nUsing puzzle:')
+    rootNode.display()
 
     global nodesExpanded
     maxQueueSize = 1
@@ -204,16 +167,18 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
             return
         
         node = heapq.heappop(nodes)[2]
+        expand(node, nodes)
+        nodesExpanded += 1
+
         
         visitedStates.append(node.data)
 
-        print('Popped')
-        print(node.state())
-        nodesExpanded += 1
+        # print('Popped')
+        # print(node.state())
         
 
         if node.state() == puzzleEnd:
-            print('Success!')
+            print('\nSuccess!\n')
             print('Expanded {} nodes'.format(nodesExpanded))
             print('The maximum number of nodes in the queue at any one time was {}'.format(maxQueueSize))
             print('The depth of the goal node was {}'.format(node.g))
@@ -226,9 +191,7 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
             # Priority queue deals with ordering. Then we pop off highest priority 
             # child and repeat this process.
             
-            # node.expand()
-            expand(node, nodes)
-            print('Expanding {} children'.format(len(node.get_children())))
+            # expand(node, nodes)
             for child in node.get_children():
                 queuePosition += 1
                 if child.data not in visitedStates:
@@ -241,15 +204,13 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
 
         # Misplaced tile heuristic
         elif queueFunc == 2:
-            expand(node, nodes)
-            print('Expanding {} children'.format(len(node.get_children())))
+            # expand(node, nodes)
             for child in node.get_children():
                 queuePosition += 1
                 if child.data not in visitedStates:
                     heapq.heappush(nodes, (MTH(child, puzzleEnd), queuePosition, child))
         elif queueFunc == 3:
-            expand(node, nodes)
-            print('Expanding {} children'.format(len(node.get_children())))
+            # expand(node, nodes)
             for child in node.get_children():
                 queuePosition += 1
                 if child.data not in visitedStates:
@@ -257,59 +218,67 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
     
 
 def main():
-    # welcome()
+    print('Welcome to Isaac\'s 8-puzzle solver.')
+    
+    puzzleChoice = int(input('Type “1” to use a default puzzle, or “2” to enter your own puzzle. '))
     puzzle = [[0 for i in range(COLS)] for j in range(ROWS)]
     
-    puzzle = [[1, 2, 3], 
-              [4, 5, 6], 
-              [0, 7, 8]]
+    if puzzleChoice == 1:        
+        # Default puzzles
+        defaultPuzzles = {
+            "1" : [[1, 2, 3],     # Depth 0
+                   [4, 5, 6],
+                   [7, 8, 0]],
+            "2" : [[1, 2, 3],     # Depth 2
+                   [4, 5, 6], 
+                   [0, 7, 8]],
+            "3" : [[1, 2, 3],     # Depth 4
+                   [5, 0, 6],  
+                   [4, 7, 8]],
+            "4" : [[1, 3, 6],     # Depth 8 
+                   [5, 0, 2],
+                   [4, 7, 8]],
+            "5" : [[1, 3, 6],     # Depth 12 
+                   [5, 0, 7],
+                   [4, 8, 2]],
+            "6" : [[1, 6, 7],     # Depth 16
+                   [5, 0, 3],
+                   [4, 8, 2]],
+            "7" : [[7, 1, 2],     # Depth 20
+                   [4, 8, 5],  
+                   [6, 3, 0]],
+            "8" : [[0, 7, 2],     # Depth 24
+                   [4, 6, 1],
+                   [3, 5, 8]],
+            "9" : [[8, 6, 7],     # Depth 31
+                   [2, 5, 4],
+                   [3, 0, 1]]
+        }
+        # puzzle = defaultPuzzles[str(randint(1, 9))]
+        puzzle = defaultPuzzles[input('Default puzzle: ')]
 
-    puzzle1 = [[1, 2, 3], 
-              [5, 0, 6], 
-              [4, 7, 8]] # AB 23 iterations 4 depth
+    elif puzzleChoice == 2:
+        print('Enter your puzzle. Use a zero to represent the blank and use space or tabs between numbers.')
+        for i in range(ROWS):
+            try:
+                # Take multiple inputs using list comprehension. Uses maxsplit argument of split() to ensure valid input
+                puzzle[i] = [int(item) for item in input('Row {}: '.format(i+1)).split(None, COLS - 1)] 
+            except:
+                print('You can only input {} numbers per row. Try again.'.format(COLS))
+                return -1
+
+    print('Enter your choice of algorithm: ')
+    print(' 1. Uniform Cost Search\n 2. A* with the Misplaced Tile heuristic.\n 3. A* with the Manhattan distance heuristic.')
+    algoChoice = int(input())
     
-    A = [[1, 2, 3], # 0
-        [4, 5, 6],
-        [7, 8, 0]]
-
-    B = [[1, 2, 3], 
-        [4, 5, 6],  # 2
-        [0, 7, 8]]
-
-    C = [[1, 2, 3], 
-        [5, 0, 6],  # 4
-        [4, 7, 8]]
-
-    D = [[1, 3, 6], 
-        [5, 0, 2],  # 8
-        [4, 7, 8]]
-
-    E = [[1, 3, 6], 
-        [5, 0, 7],  # 12
-        [4, 8, 2]]
-
-    F = [[1, 6, 7], # 16
-        [5, 0, 3],
-        [4, 8, 2]]
-
-    G = [[7, 1, 2], 
-        [4, 8, 5],  # 20
-        [6, 3, 0]]
-
-    H = [[0, 7, 2], # 24
-        [4, 6, 1],
-        [3, 5, 8]]
-
-    I = [[8, 6, 7], # 31
-        [2, 5, 4],
-        [3, 0, 1]]
+    
 
 
     puzzleEnd = [[1, 2, 3], 
                  [4, 5, 6], 
                  [7, 8, 0]]
 
-    generalSearch(G, puzzleEnd, 3)
+    generalSearch(puzzle, puzzleEnd, algoChoice)
     
     
 main()
