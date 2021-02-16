@@ -151,12 +151,14 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
     nodes = []
     heapq.heappush(nodes, (0, 0, rootNode))
 
-    print('\nUsing puzzle:')
+    print('\nPuzzle start state:')
     rootNode.display()
+    print('===========')
 
     global nodesExpanded
     maxQueueSize = 1
-    queuePosition = 0   # Tie breaker 
+    queuePosition = 0               # Tie breaker - enqueue order
+    numInitialExpansions = 3        # Counter to keep track of how many initial expansions to display
 
     while True:
         if len(nodes) > maxQueueSize:
@@ -169,15 +171,18 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
         node = heapq.heappop(nodes)[2]
         expand(node, nodes)
         nodesExpanded += 1
+        visitedStates.append(node.data)        
 
-        
-        visitedStates.append(node.data)
-
-        # print('Popped')
-        # print(node.state())
-        
+        if numInitialExpansions > 0:
+            print('Expanding node:')
+            node.display()
+            numInitialExpansions -= 1
 
         if node.state() == puzzleEnd:
+            print('\n~~~~~ Steps omitted ~~~~~\n')
+            print('Expanding node:')
+            for row in visitedStates[-1]:
+                print(row)
             print('\nSuccess!\n')
             print('Expanded {} nodes'.format(nodesExpanded))
             print('The maximum number of nodes in the queue at any one time was {}'.format(maxQueueSize))
@@ -196,12 +201,6 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
                 queuePosition += 1
                 if child.data not in visitedStates:
                     heapq.heappush(nodes, (UCS(child), queuePosition, child))
-            #         child.display()
-            #         print('-------------')
-            # #         # nodesExpanded += 1
-            # print('Next level')
-            # print('===============')
-
         # Misplaced tile heuristic
         elif queueFunc == 2:
             # expand(node, nodes)
@@ -209,6 +208,7 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
                 queuePosition += 1
                 if child.data not in visitedStates:
                     heapq.heappush(nodes, (MTH(child, puzzleEnd), queuePosition, child))
+        # Manhattan distance heuristic
         elif queueFunc == 3:
             # expand(node, nodes)
             for child in node.get_children():
