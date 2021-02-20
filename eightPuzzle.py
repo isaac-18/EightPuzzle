@@ -1,5 +1,5 @@
-import queue
 import heapq
+import time
 from random import randint
 from copy import deepcopy
 
@@ -255,7 +255,7 @@ def main():
                    [3, 0, 1]]
         }
         # puzzle = defaultPuzzles[str(randint(1, 9))]
-        puzzle = defaultPuzzles[input('Default puzzle: ')]
+        puzzle = defaultPuzzles[input('Default puzzle (1-9): ')]
 
     elif puzzleChoice == 2:
         print('Enter your puzzle. Use a zero to represent the blank and use space or tabs between numbers.')
@@ -269,16 +269,16 @@ def main():
 
     print('Enter your choice of algorithm: ')
     print(' 1. Uniform Cost Search\n 2. A* with the Misplaced Tile heuristic.\n 3. A* with the Manhattan distance heuristic.')
-    algoChoice = int(input())
-    
-    
-
+    algoChoice = int(input())      
 
     puzzleEnd = [[1, 2, 3], 
                  [4, 5, 6], 
                  [7, 8, 0]]
 
+    start = time.time()
     generalSearch(puzzle, puzzleEnd, algoChoice)
+    end = time.time()
+    print('Time elapsed: {} seconds'.format(end - start))
     
     
 main()
