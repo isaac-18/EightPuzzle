@@ -24,19 +24,13 @@ class Node:
         else:
             print('Duplicate')
 
-    def state(self):
-        return self.data
-
-    def get_children(self):
-        return self.children
-
     # Prints puzzle
     def display(self):
         for row in self.data:
             print(row)
         return
 
-    # Returns coordinates the of blank square
+    # Returns coordinates the specified value
     def findCoords(self, searchValue):
         for x, col in enumerate(self.data):
             try:
@@ -159,7 +153,7 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
             node.display()
             numInitialExpansions -= 1
 
-        if node.state() == puzzleEnd:
+        if node.data == puzzleEnd:
             print('\n~~~~~ Steps omitted ~~~~~\n')
             print('Expanding node:')
             for row in visitedStates[-1]:
@@ -172,19 +166,19 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
         
         # Uniform cost search
         if queueFunc == 1:
-            for child in node.get_children():
+            for child in node.children:
                 queuePosition += 1
                 if child.data not in visitedStates:
                     heapq.heappush(nodes, (UCS(child), queuePosition, child))
         # Misplaced tile heuristic
         elif queueFunc == 2:
-            for child in node.get_children():
+            for child in node.children:
                 queuePosition += 1
                 if child.data not in visitedStates:
                     heapq.heappush(nodes, (MTH(child, puzzleEnd), queuePosition, child))
         # Manhattan distance heuristic
         elif queueFunc == 3:
-            for child in node.get_children():
+            for child in node.children:
                 queuePosition += 1
                 if child.data not in visitedStates:
                     heapq.heappush(nodes, (MDH(child, puzzleEnd), queuePosition, child))
