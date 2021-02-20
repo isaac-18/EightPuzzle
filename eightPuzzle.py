@@ -14,10 +14,7 @@ class Node:
     def __init__(self, data, g):
         self.data = data
         self.children = []
-        # self.depth = depth
         self.g = g
-        # self.h = h
-        # self.f = g + h
         return
 
     def add_child(self, child):
@@ -85,15 +82,13 @@ def MDH(node, goal):
                     
     return node.g + h
 
-def expand(node, queue):
+def expand(node):
         puzzle = node.data
         coords = node.findCoords(0) # Coordinates of the empty square
         g = node.g + 1
         global nodesExpanded
 
         try:
-            # Move left
-            # print('Moving left')
             newPuzzle = deepcopy(puzzle)
             if coords[1] != 0:
                 newPuzzle[coords[0]][coords[1]], newPuzzle[coords[0]][coords[1]-1] = newPuzzle[coords[0]][coords[1]-1], newPuzzle[coords[0]][coords[1]]
@@ -101,26 +96,18 @@ def expand(node, queue):
                 if newPuzzle not in visitedStates:
                     node.add_child(newNode)
         except:
-            # print('Can\'t move left!')
-            # print('-------------')
             pass
 
         try:
-            # Move right
-            # print('Moving right')
             newPuzzle = deepcopy(puzzle)
             newPuzzle[coords[0]][coords[1]], newPuzzle[coords[0]][coords[1]+1] = newPuzzle[coords[0]][coords[1]+1], newPuzzle[coords[0]][coords[1]]
             newNode = Node(newPuzzle, g)
             if newPuzzle not in visitedStates:
                 node.add_child(newNode)
         except:
-            # print('Can\'t move right!')
-            # print('-------------')
             pass
 
         try:
-            # Move up
-            # print('Moving up')
             newPuzzle = deepcopy(puzzle)
             if coords[0] != 0:
                 newPuzzle[coords[0]][coords[1]], newPuzzle[coords[0]-1][coords[1]] = newPuzzle[coords[0]-1][coords[1]], newPuzzle[coords[0]][coords[1]]
@@ -128,21 +115,15 @@ def expand(node, queue):
                 if newPuzzle not in visitedStates:
                     node.add_child(newNode)
         except:
-            # print('Can\'t move up!')
-            # print('-------------')
             pass
 
         try:
-            # Move down
-            # print('Moving down')
             newPuzzle = deepcopy(puzzle)
             newPuzzle[coords[0]][coords[1]], newPuzzle[coords[0]+1][coords[1]] = newPuzzle[coords[0]+1][coords[1]], newPuzzle[coords[0]][coords[1]]
             newNode = Node(newPuzzle, g)
             if newPuzzle not in visitedStates:
                 node.add_child(newNode)
         except:
-            # print('Can\'t move down!')
-            # print('-------------')
             pass
 
 def generalSearch(puzzleStart, puzzleEnd, queueFunc):
@@ -153,7 +134,7 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
 
     print('\nPuzzle start state:')
     rootNode.display()
-    print('===========')
+    print('===================')
 
     global nodesExpanded
     maxQueueSize = 1
@@ -169,7 +150,7 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
             return
         
         node = heapq.heappop(nodes)[2]
-        expand(node, nodes)
+        expand(node)
         nodesExpanded += 1
         visitedStates.append(node.data)        
 
@@ -187,30 +168,22 @@ def generalSearch(puzzleStart, puzzleEnd, queueFunc):
             print('Expanded {} nodes'.format(nodesExpanded))
             print('The maximum number of nodes in the queue at any one time was {}'.format(maxQueueSize))
             print('The depth of the goal node was {}'.format(node.g))
-            # return node ?
             return
         
         # Uniform cost search
         if queueFunc == 1:
-            # Expands the parent node and places all the children in queue.
-            # Priority queue deals with ordering. Then we pop off highest priority 
-            # child and repeat this process.
-            
-            # expand(node, nodes)
             for child in node.get_children():
                 queuePosition += 1
                 if child.data not in visitedStates:
                     heapq.heappush(nodes, (UCS(child), queuePosition, child))
         # Misplaced tile heuristic
         elif queueFunc == 2:
-            # expand(node, nodes)
             for child in node.get_children():
                 queuePosition += 1
                 if child.data not in visitedStates:
                     heapq.heappush(nodes, (MTH(child, puzzleEnd), queuePosition, child))
         # Manhattan distance heuristic
         elif queueFunc == 3:
-            # expand(node, nodes)
             for child in node.get_children():
                 queuePosition += 1
                 if child.data not in visitedStates:
@@ -254,7 +227,6 @@ def main():
                    [2, 5, 4],
                    [3, 0, 1]]
         }
-        # puzzle = defaultPuzzles[str(randint(1, 9))]
         puzzle = defaultPuzzles[input('Default puzzle (1-9): ')]
 
     elif puzzleChoice == 2:
