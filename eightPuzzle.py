@@ -1,6 +1,5 @@
 import heapq
 import time
-from random import randint
 from copy import deepcopy
 
 # Board Size
